@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TokenAuthController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -17,13 +18,15 @@ use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController;
 use Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController;
 
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
-
 Route::middleware('guest')->group(
     function () {
         $limiter = config('fortify.limiters.login');
 
         Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware(
+            array_filter([$limiter ? 'throttle:' . $limiter : null])
+        );
+
+        Route::post('/token', [TokenAuthController::class, 'store'])->middleware(
             array_filter([$limiter ? 'throttle:' . $limiter : null])
         );
 
@@ -42,6 +45,9 @@ Route::middleware('guest')->group(
 
 Route::middleware('auth:sanctum')->group(
     function () {
+        Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+        Route::delete('/token', [TokenAuthController::class, 'destroy']);
+
         Route::get('/me', [UserController::class, 'me']);
         Route::get('/tickets', [TicketController::class, 'index']);
 
