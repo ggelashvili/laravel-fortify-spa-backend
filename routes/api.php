@@ -26,11 +26,13 @@ Route::middleware('guest')->group(
             array_filter([$limiter ? 'throttle:' . $limiter : null])
         );
 
-        Route::post('/token', [TokenAuthController::class, 'store'])->middleware(
+        Route::post('/auth/token', [TokenAuthController::class, 'store'])->middleware(
             array_filter([$limiter ? 'throttle:' . $limiter : null])
         );
 
-        Route::post('/two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);
+        if (Features::enabled(Features::twoFactorAuthentication())) {
+            Route::post('/two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);
+        }
 
         if (Features::enabled(Features::registration())) {
             Route::post('/register', [RegisteredUserController::class, 'store']);
@@ -46,7 +48,7 @@ Route::middleware('guest')->group(
 Route::middleware('auth:sanctum')->group(
     function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
-        Route::delete('/token', [TokenAuthController::class, 'destroy']);
+        Route::delete('/auth/token', [TokenAuthController::class, 'destroy']);
 
         Route::get('/me', [UserController::class, 'me']);
         Route::get('/tickets', [TicketController::class, 'index']);
