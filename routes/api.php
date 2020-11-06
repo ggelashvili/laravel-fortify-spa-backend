@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TokenAuthController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +18,6 @@ use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController;
 use Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController;
 
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
-
 Route::middleware('guest')->group(
     function () {
         $limiter = config('fortify.limiters.login');
@@ -27,7 +26,13 @@ Route::middleware('guest')->group(
             array_filter([$limiter ? 'throttle:' . $limiter : null])
         );
 
-        Route::post('/two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);
+        Route::post('/auth/token', [TokenAuthController::class, 'store'])->middleware(
+            array_filter([$limiter ? 'throttle:' . $limiter : null])
+        );
+
+        if (Features::enabled(Features::twoFactorAuthentication())) {
+            Route::post('/two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);
+        }
 
         if (Features::enabled(Features::registration())) {
             Route::post('/register', [RegisteredUserController::class, 'store']);
@@ -42,6 +47,9 @@ Route::middleware('guest')->group(
 
 Route::middleware('auth:sanctum')->group(
     function () {
+        Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+        Route::delete('/auth/token', [TokenAuthController::class, 'destroy']);
+
         Route::get('/me', [UserController::class, 'me']);
         Route::get('/tickets', [TicketController::class, 'index']);
 
