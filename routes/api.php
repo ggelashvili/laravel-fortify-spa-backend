@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OtherBrowserSessionsController;
 use App\Http\Controllers\TokenAuthController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
@@ -51,6 +52,9 @@ Route::middleware('auth:sanctum')->group(
         Route::delete('/auth/token', [TokenAuthController::class, 'destroy']);
 
         Route::get('/me', [UserController::class, 'me']);
+        Route::get('/user/sessions', [OtherBrowserSessionsController::class, 'index']);
+        Route::post('/user/sessions/purge', [OtherBrowserSessionsController::class, 'destroy']);
+
         Route::get('/tickets', [TicketController::class, 'index']);
 
         Route::post('/user/confirm-password', [ConfirmablePasswordController::class, 'store']);
