@@ -21,10 +21,11 @@ class UserResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'     => $this->id,
-            'name'   => $this->name,
-            'email'  => $this->email,
-            'has2FA' => $this->two_factor_secret ? true : false,
+            'id'       => $this->id,
+            'name'     => $this->name,
+            'email'    => $this->email,
+            'has2FA'   => $this->two_factor_secret ? true : false,
+            'verified' => $this->hasVerifiedEmail(),
         ];
     }
 }

@@ -16,7 +16,7 @@ Route::middleware('guest')->group(
     }
 );
 
-Route::middleware('auth:sanctum')->group(
+Route::middleware(['auth:sanctum', 'verified'])->group(
     function () {
         Route::delete('/auth/token', [TokenAuthController::class, 'destroy']);
 
